@@ -1,0 +1,1784 @@
+{
+  "components": {
+    "comp-endpoint-create": {
+      "executorLabel": "exec-endpoint-create",
+      "inputDefinitions": {
+        "parameters": {
+          "description": {
+            "defaultValue": "",
+            "description": "The description of the Endpoint.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "display_name": {
+            "description": "The user-defined name of the Endpoint. The name can be up to 128 characters long and can be consist of any UTF-8 characters.",
+            "parameterType": "STRING"
+          },
+          "encryption_spec_key_name": {
+            "defaultValue": "",
+            "description": "Customer-managed encryption key spec for an Endpoint. If set, this Endpoint and all of this Endoint's sub-resources will be secured by this key. Has the form: `projects/my-project/locations/my-location/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created.  If set, this Endpoint and all sub-resources of this Endpoint will be secured by this key.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "labels": {
+            "defaultValue": {},
+            "description": "The labels with user-defined metadata to organize your Endpoints.  Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed.  See https://goo.gl/xmQnxf for more information and examples of labels.",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "location": {
+            "defaultValue": "us-central1",
+            "description": "Location to create the Endpoint. If not set, default to us-central1.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "network": {
+            "defaultValue": "",
+            "description": "The full name of the Google Compute Engine network to which the Endpoint should be peered. Private services access must already be configured for the network. If left unspecified, the Endpoint is not peered with any network. [Format](https://cloud.google.com/compute/docs/reference/rest/v1/networks/insert): `projects/{project}/global/networks/{network}`. Where `{project}` is a project number, as in `'12345'`, and `{network}` is network name.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "project": {
+            "defaultValue": "{{$.pipeline_google_cloud_project_id}}",
+            "description": "Project to create the Endpoint. Defaults to the project in which the PipelineJob is run.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "endpoint": {
+            "artifactType": {
+              "schemaTitle": "google.VertexEndpoint",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Artifact tracking the created Endpoint."
+          }
+        },
+        "parameters": {
+          "gcp_resources": {
+            "description": "Serialized JSON of `gcp_resources` [proto](https://github.com/kubeflow/pipelines/tree/master/components/google-cloud/google_cloud_pipeline_components/proto) which tracks the create Endpoint's long-running operation.",
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-get-dataframe": {
+      "executorLabel": "exec-get-dataframe",
+      "inputDefinitions": {
+        "parameters": {
+          "bq_table": {
+            "parameterType": "STRING"
+          },
+          "project_id": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "test_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "train_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "val_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-model-batch-predict": {
+      "executorLabel": "exec-model-batch-predict",
+      "inputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "google.VertexModel",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The Model used to get predictions via this job. Must share the same ancestor Location. Starting this job has no impact on any existing deployments of the Model and their resources. Either this or `unmanaged_container_model` must be specified.",
+            "isOptional": true
+          },
+          "unmanaged_container_model": {
+            "artifactType": {
+              "schemaTitle": "google.UnmanagedContainerModel",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The unmanaged container model used to get predictions via this job. This should be used for models that are not uploaded to Vertex. Either this or model must be specified.",
+            "isOptional": true
+          }
+        },
+        "parameters": {
+          "accelerator_count": {
+            "defaultValue": 0.0,
+            "description": "The number of accelerators to attach to the `machine_type`. Only used if `machine_type` is set.  For more details about the machine spec, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "accelerator_type": {
+            "defaultValue": "",
+            "description": "The type of accelerator(s) that may be attached to the machine as per `accelerator_count`. Only used if `machine_type` is set.  For more details about the machine spec, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "bigquery_destination_output_uri": {
+            "defaultValue": "",
+            "description": "The BigQuery project location where the output is to be written to. In the given project a new dataset is created with name `prediction_<model-display-name>_<job-create-time>` where is made BigQuery-dataset-name compatible (for example, most special characters become underscores), and timestamp is in YYYY_MM_DDThh_mm_ss_sssZ \"based on ISO-8601\" format. In the dataset two tables will be created, `predictions`, and `errors`. If the Model has both `instance` and `prediction` schemata defined then the tables have columns as follows: The `predictions` table contains instances for which the prediction succeeded, it has columns as per a concatenation of the Model's instance and prediction schemata. The `errors` table contains rows for which the prediction has failed, it has instance columns, as per the instance schema, followed by a single \"errors\" column, which as values has [google.rpc.Status](Status) represented as a STRUCT, and containing only `code` and `message`. For more details about this output config, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#OutputConfig.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "bigquery_source_input_uri": {
+            "defaultValue": "",
+            "description": "BigQuery URI to a table, up to 2000 characters long. For example: `projectId.bqDatasetId.bqTableId`  For more details about this input config, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "encryption_spec_key_name": {
+            "defaultValue": "",
+            "description": "Customer-managed encryption key options for a BatchPredictionJob. If this is set, then all resources created by the BatchPredictionJob will be encrypted with the provided encryption key.  Has the form: `projects/my-project/locations/my-location/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "excluded_fields": {
+            "defaultValue": [],
+            "description": "Fields that will be excluded in the prediction instance that is sent to the Model. Excluded will be attached to the batch prediction output if key_field is not specified. When `excluded_fields` is populated, `included_fields` must be empty. The input must be JSONL with objects at each line, CSV, BigQuery or TfRecord. may be specified via the Model's `parameters_schema_uri`.",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "explanation_metadata": {
+            "defaultValue": {},
+            "description": "Explanation metadata configuration for this BatchPredictionJob. Can be specified only if `generate_explanation` is set to `True`.  This value overrides the value of `Model.explanation_metadata`. All fields of `explanation_metadata` are optional in the request. If a field of the `explanation_metadata` object is not populated, the corresponding field of the `Model.explanation_metadata` object is inherited.  For more details, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/ExplanationSpec#explanationmetadata.",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "explanation_parameters": {
+            "defaultValue": {},
+            "description": "Parameters to configure explaining for Model's predictions. Can be specified only if `generate_explanation` is set to `True`.  This value overrides the value of `Model.explanation_parameters`. All fields of `explanation_parameters` are optional in the request. If a field of the `explanation_parameters` object is not populated, the corresponding field of the `Model.explanation_parameters` object is inherited.  For more details, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/ExplanationSpec#ExplanationParameters.",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "gcs_destination_output_uri_prefix": {
+            "defaultValue": "",
+            "description": "The Google Cloud Storage location of the directory where the output is to be written to. In the given directory a new directory is created. Its name is `prediction-<model-display-name>-<job-create-time>`, where timestamp is in YYYY-MM-DDThh:mm:ss.sssZ ISO-8601 format. Inside of it files `predictions_0001.<extension>`, `predictions_0002.<extension>`, ..., `predictions_N.<extension>` are created where `<extension>` depends on chosen `predictions_format`, and N may equal 0001 and depends on the total number of successfully predicted instances. If the Model has both `instance` and `prediction` schemata defined then each such file contains predictions as per the `predictions_format`. If prediction for any instance failed (partially or completely), then an additional `errors_0001.<extension>`, `errors_0002.<extension>`,..., `errors_N.<extension>` files are created (N depends on total number of failed predictions). These files contain the failed instances, as per their schema, followed by an additional `error` field which as value has `google.rpc.Status` containing only `code` and `message` fields.  For more details about this output config, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#OutputConfig.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "gcs_source_uris": {
+            "defaultValue": [],
+            "description": "Google Cloud Storage URI(-s) to your instances to run batch prediction on. They must match `instances_format`. May contain wildcards. For more information on wildcards, see [WildcardNames](https://cloud.google.com/storage/docs/gsutil/addlhelp/WildcardNames). For more details about this input config, see [InputConfig](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig).",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "generate_explanation": {
+            "defaultValue": false,
+            "description": "Generate explanation along with the batch prediction results. This will cause the batch prediction output to include explanations based on the `prediction_format`: - `bigquery`: output includes a column named `explanation`. The value is a struct that conforms to the [aiplatform.gapic.Explanation] object. - `jsonl`: The JSON objects on each line include an additional entry keyed `explanation`. The value of the entry is a JSON object that conforms to the [aiplatform.gapic.Explanation] object. - `csv`: Generating explanations for CSV format is not supported.  If this field is set to true, either the Model.explanation_spec or explanation_metadata and explanation_parameters must be populated.",
+            "isOptional": true,
+            "parameterType": "BOOLEAN"
+          },
+          "included_fields": {
+            "defaultValue": [],
+            "description": "Fields that will be included in the prediction instance that is sent to the Model. If `instance_type` is `array`, the order of field names in `included_fields` also determines the order of the values in the array. When `included_fields` is populated, `excluded_fields` must be empty. The input must be JSONL with objects at each line, CSV, BigQuery or TfRecord.",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "instance_type": {
+            "defaultValue": "",
+            "description": "The format of the instance that the Model accepts. Vertex AI will convert compatible [InstancesFormat](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig) to the specified format. Supported values are: `object`: Each input is converted to JSON object format. * For `bigquery`, each row is converted to an object. * For `jsonl`, each line of the JSONL input must be an object. * Does not apply to `csv`, `file-list`, `tf-record`, or `tf-record-gzip`. `array`: Each input is converted to JSON array format. * For `bigquery`, each row is converted to an array. The order of columns is determined by the BigQuery column order, unless [included_fields](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig) is populated. `included_fields` must be populated for specifying field orders. * For `jsonl`, if each line of the JSONL input is an object, `included_fields` must be populated for specifying field orders. * Does not apply to `csv`, `file-list`, `tf-record`, or `tf-record-gzip`. If not specified, Vertex AI converts the batch prediction input as follows: * For `bigquery` and `csv`, the behavior is the same as `array`. The order of columns is the same as defined in the file or table, unless included_fields is populated. * For `jsonl`, the prediction instance format is determined by each line of the input. * For `tf-record`/`tf-record-gzip`, each record will be converted to an object in the format of `{\"b64\": <value>}`, where `<value>` is the Base64-encoded string of the content of the record. * For `file-list`, each file in the list will be converted to an object in the format of `{\"b64\": <value>}`, where `<value>` is the Base64-encoded string of the content of the file.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "instances_format": {
+            "defaultValue": "jsonl",
+            "description": "The format in which instances are given, must be one of the [Model](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.models)'s supportedInputStorageFormats. For more details about this input config, see [InputConfig](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig.)",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "job_display_name": {
+            "description": "The user-defined name of this BatchPredictionJob.",
+            "parameterType": "STRING"
+          },
+          "key_field": {
+            "defaultValue": "",
+            "description": "The name of the field that is considered as a key. The values identified by the key field is not included in the transformed instances that is sent to the Model. This is similar to specifying this name of the field in [excluded_fields](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#InputConfig). In addition, the batch prediction output will not include the instances. Instead the output will only include the value of the key field, in a field named `key` in the output: * For `jsonl` output format, the output will have a `key` field instead of the `instance` field. * For `csv`/`bigquery` output format, the output will have have a `key` column instead of the instance feature columns. The input must be JSONL with objects at each line, CSV, BigQuery or TfRecord.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "labels": {
+            "defaultValue": {},
+            "description": "The labels with user-defined metadata to organize your BatchPredictionJobs.  Label keys and values can be no longer than 64 characters (Unicode codepoints), can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed.  See https://goo.gl/xmQnxf for more information and examples of labels.",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "location": {
+            "defaultValue": "us-central1",
+            "description": "Location for creating the BatchPredictionJob.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "machine_type": {
+            "defaultValue": "",
+            "description": "The type of machine for running batch prediction on dedicated resources. If the Model supports DEDICATED_RESOURCES this config may be provided (and the job will use these resources). If the Model doesn't support AUTOMATIC_RESOURCES, this config must be provided.  For more details about the BatchDedicatedResources, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#BatchDedicatedResources. For more details about the machine spec, see https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "manual_batch_tuning_parameters_batch_size": {
+            "defaultValue": 0.0,
+            "description": "The number of the records (e.g. instances) of the operation given in each batch to a machine replica. Machine type, and size of a single record should be considered when setting this parameter, higher value speeds up the batch operation's execution, but too high value will result in a whole batch not fitting in a machine's memory, and the whole operation will fail.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "max_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The maximum number of machine replicas the batch operation may be scaled to. Only used if `machine_type` is set.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "model_parameters": {
+            "defaultValue": {},
+            "description": "The parameters that govern the predictions. The schema of the parameters",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "predictions_format": {
+            "defaultValue": "jsonl",
+            "description": "The format in which Vertex AI gives the predictions. Must be one of the Model's supportedOutputStorageFormats. For more details about this output config, see [OutputConfig](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs#OutputConfig).",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "project": {
+            "defaultValue": "{{$.pipeline_google_cloud_project_id}}",
+            "description": "Project to create the BatchPredictionJob. Defaults to the project in which the PipelineJob is run.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "service_account": {
+            "defaultValue": "",
+            "description": "The service account that the DeployedModel's container runs as. If not specified, a system generated one will be used, which has minimal permissions and the custom container, if used, may not have enough permission to access other Google Cloud resources. Users deploying the Model must have the iam.serviceAccounts.actAs permission on this service account.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "starting_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The number of machine replicas used at the start of the batch operation. If not set, Vertex AI decides starting number, not greater than `max_replica_count`. Only used if `machine_type` is set.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "batchpredictionjob": {
+            "artifactType": {
+              "schemaTitle": "google.VertexBatchPredictionJob",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "[**Deprecated. Use gcs_output_directory and bigquery_output_table instead.**] Artifact representation of the created batch prediction job."
+          },
+          "bigquery_output_table": {
+            "artifactType": {
+              "schemaTitle": "google.BQTable",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Artifact tracking the batch prediction job output. This is only available if bigquery_output_table is specified."
+          },
+          "gcs_output_directory": {
+            "artifactType": {
+              "schemaTitle": "system.Artifact",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Artifact tracking the batch prediction job output. This is only available if gcs_destination_output_uri_prefix is specified."
+          }
+        },
+        "parameters": {
+          "gcp_resources": {
+            "description": "Serialized gcp_resources proto tracking the batch prediction job. For more details, see https://github.com/kubeflow/pipelines/blob/master/components/google-cloud/google_cloud_pipeline_components/proto/README.md.",
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-model-deploy": {
+      "executorLabel": "exec-model-deploy",
+      "inputDefinitions": {
+        "artifacts": {
+          "endpoint": {
+            "artifactType": {
+              "schemaTitle": "google.VertexEndpoint",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The Endpoint to be deployed to.",
+            "isOptional": true
+          },
+          "model": {
+            "artifactType": {
+              "schemaTitle": "google.VertexModel",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The model to be deployed."
+          }
+        },
+        "parameters": {
+          "automatic_resources_max_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The maximum number of replicas this DeployedModel may be deployed on when the traffic against it increases. If the requested value is too large, the deployment will error, but if deployment succeeds then the ability to scale the model to that many replicas is guaranteed (barring service outages). If traffic against the DeployedModel increases beyond what its replicas at maximum may handle, a portion of the traffic will be dropped. If this value is not provided, a no upper bound for scaling under heavy traffic will be assume, though Vertex AI may be unable to scale beyond certain replica number.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "automatic_resources_min_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The minimum number of replicas this DeployedModel will be always deployed on. If traffic against it increases, it may dynamically be deployed onto more replicas up to `automatic_resources_max_replica_count`, and as traffic decreases, some of these extra replicas may be freed. If the requested value is too large, the deployment will error.  This field is required if `dedicated_resources_machine_type` is not specified.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "dedicated_resources_accelerator_count": {
+            "defaultValue": 0.0,
+            "description": "The number of accelerators to attach to a worker replica.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "dedicated_resources_accelerator_type": {
+            "defaultValue": "",
+            "description": "Hardware accelerator type. Must also set accelerator_count if used. See [available options](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec#AcceleratorType).  This field is required if `dedicated_resources_machine_type` is specified.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dedicated_resources_machine_type": {
+            "defaultValue": "",
+            "description": "The specification of a single machine used by the prediction.  This field is required if `automatic_resources_min_replica_count` is not specified.  See [more information](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints#dedicatedresources).",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dedicated_resources_max_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The maximum number of replicas this deployed model may the larger value of min_replica_count or 1 will be used. If value provided is smaller than min_replica_count, it will automatically be increased to be min_replica_count. The maximum number of replicas this deployed model may be deployed on when the traffic against it increases. If requested value is too large, the deployment will error, but if deployment succeeds then the ability to scale the model to that many replicas is guaranteed (barring service outages). If traffic against the deployed model increases beyond what its replicas at maximum may handle, a portion of the traffic will be dropped. If this value is not provided, will use `dedicated_resources_min_replica_count` as the default value.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "dedicated_resources_min_replica_count": {
+            "defaultValue": 0.0,
+            "description": "The minimum number of machine replicas this DeployedModel will be always deployed on. This value must be greater than or equal to 1. If traffic against the DeployedModel increases, it may dynamically be deployed onto more replicas, and as traffic decreases, some of these extra replicas may be freed.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "deployed_model_display_name": {
+            "defaultValue": "",
+            "description": "The display name of the DeployedModel. If not provided upon creation, the Model's display_name is used.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "disable_container_logging": {
+            "defaultValue": false,
+            "description": "For custom-trained Models and AutoML Tabular Models, the container of the DeployedModel instances will send stderr and stdout streams to Stackdriver Logging by default. Please note that the logs incur cost, which are subject to Cloud Logging pricing.  User can disable container logging by setting this flag to true.",
+            "isOptional": true,
+            "parameterType": "BOOLEAN"
+          },
+          "enable_access_logging": {
+            "defaultValue": false,
+            "description": "These logs are like standard server access logs, containing information like timestamp and latency for each prediction request.  Note that Stackdriver logs may incur a cost, especially if your project receives prediction requests at a high queries per second rate (QPS). Estimate your costs before enabling this option.",
+            "isOptional": true,
+            "parameterType": "BOOLEAN"
+          },
+          "explanation_metadata": {
+            "defaultValue": {},
+            "description": "Metadata describing the Model's input and output for explanation. See [more information](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/ExplanationSpec#explanationmetadata).",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "explanation_parameters": {
+            "defaultValue": {},
+            "description": "Parameters that configure explaining information of the Model's predictions. See [more information](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/ExplanationSpec#explanationmetadata).",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          },
+          "service_account": {
+            "defaultValue": "",
+            "description": "The service account that the DeployedModel's container runs as. Specify the email address of the service account. If this service account is not specified, the container runs as a service account that doesn't have access to the resource project.  Users deploying the Model must have the `iam.serviceAccounts.actAs` permission on this service account.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "traffic_split": {
+            "defaultValue": {},
+            "description": "A map from a DeployedModel's ID to the percentage of this Endpoint's traffic that should be forwarded to that DeployedModel.  If this field is non-empty, then the Endpoint's trafficSplit will be overwritten with it. To refer to the ID of the just being deployed Model, a \"0\" should be used, and the actual ID of the new DeployedModel will be filled in its place by this method. The traffic percentage values must add up to 100.  If this field is empty, then the Endpoint's trafficSplit is not updated.",
+            "isOptional": true,
+            "parameterType": "STRUCT"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "parameters": {
+          "gcp_resources": {
+            "description": "Serialized JSON of `gcp_resources` [proto](https://github.com/kubeflow/pipelines/tree/master/components/google-cloud/google_cloud_pipeline_components/proto) which tracks the deploy Model's long-running operation.",
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-model-evaluation-classification": {
+      "executorLabel": "exec-model-evaluation-classification",
+      "inputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "google.VertexModel",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The Vertex model used for evaluation. Must be located in the same region as the location argument. It is used to set the default configurations for AutoML and custom-trained models.",
+            "isOptional": true
+          },
+          "predictions_bigquery_source": {
+            "artifactType": {
+              "schemaTitle": "google.BQTable",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "BigQuery table with prediction or explanation data to be used for this evaluation. For prediction results, the table column should be named \"predicted_*\".",
+            "isOptional": true
+          },
+          "predictions_gcs_source": {
+            "artifactType": {
+              "schemaTitle": "system.Artifact",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "An artifact with its URI pointing toward a GCS directory with prediction or explanation files to be used for this evaluation. For prediction results, the files should be named \"prediction.results-*\" or \"predictions_\". For explanation results, the files should be named \"explanation.results-*\".",
+            "isOptional": true
+          }
+        },
+        "parameters": {
+          "class_labels": {
+            "defaultValue": [],
+            "description": "The list of class names for the target_field_name, in the same order they appear in the batch predictions jobs predictions output file. For instance, if the values of target_field_name could be either `1` or `0`, and the predictions output contains [\"1\", \"0\"] for the prediction_label_column, then the class_labels input will be [\"1\", \"0\"]. If not set, defaults to the classes found in the prediction_label_column in the batch prediction jobs predictions file.",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "classification_type": {
+            "defaultValue": "multiclass",
+            "description": "The type of classification problem, either `multiclass` or `multilabel`.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dataflow_disk_size_gb": {
+            "defaultValue": 50.0,
+            "description": "The disk size (in GB) of the machine executing the evaluation run.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "dataflow_machine_type": {
+            "defaultValue": "n1-standard-4",
+            "description": "The machine type executing the evaluation run.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dataflow_max_workers_num": {
+            "defaultValue": 5.0,
+            "description": "The max number of workers executing the evaluation run.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "dataflow_service_account": {
+            "defaultValue": "",
+            "description": "Service account to run the Dataflow job. If not set, Dataflow will use the default worker service account. For more details, see https://cloud.google.com/dataflow/docs/concepts/security-and-permissions#default_worker_service_account",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dataflow_subnetwork": {
+            "defaultValue": "",
+            "description": "Dataflow's fully qualified subnetwork name, when empty the default subnetwork will be used. More details: https://cloud.google.com/dataflow/docs/guides/specifying-networks#example_network_and_subnetwork_specifications",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dataflow_use_public_ips": {
+            "defaultValue": true,
+            "description": "Specifies whether Dataflow workers use public IP addresses.",
+            "isOptional": true,
+            "parameterType": "BOOLEAN"
+          },
+          "dataflow_workers_num": {
+            "defaultValue": 1.0,
+            "description": "The number of workers executing the evaluation run.",
+            "isOptional": true,
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "encryption_spec_key_name": {
+            "defaultValue": "",
+            "description": " Customer-managed encryption key options. If set, resources created by this pipeline will be encrypted with the provided encryption key. Has the form: `projects/my-project/locations/my-location/keyRings/my-kr/cryptoKeys/my-key`. The key needs to be in the same region as where the compute resource is created.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "force_runner_mode": {
+            "defaultValue": "",
+            "description": "Flag to choose Beam runner. Valid options are `DirectRunner` and `Dataflow`.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "ground_truth_bigquery_source": {
+            "defaultValue": "",
+            "description": "Required for custom tabular. The BigQuery table URI representing where the ground truth is located. Used to provide ground truth for each prediction instance when they are not part of the batch prediction jobs prediction instance.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "ground_truth_format": {
+            "defaultValue": "jsonl",
+            "description": "Required for custom tabular and non tabular data. The file format for the ground truth files. `jsonl`, `csv`, and `bigquery` are the allowed formats.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "ground_truth_gcs_source": {
+            "defaultValue": [],
+            "description": "Required for custom tabular and non tabular data. The GCS URIs representing where the ground truth is located. Used to provide ground truth for each prediction instance when they are not part of the batch prediction jobs prediction instance.",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "location": {
+            "defaultValue": "us-central1",
+            "description": "Location for running the evaluation.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "positive_classes": {
+            "defaultValue": [],
+            "description": "The list of class names to create binary classification metrics based on one-vs-rest for each value of positive_classes provided.",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "prediction_label_column": {
+            "defaultValue": "prediction.classes",
+            "description": "The column name of the field containing classes the model is scoring. Formatted to be able to find nested columns, delimited by `.`.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "prediction_score_column": {
+            "defaultValue": "prediction.scores",
+            "description": "The column name of the field containing batch prediction scores. Formatted to be able to find nested columns, delimited by `.`.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "predictions_format": {
+            "defaultValue": "jsonl",
+            "description": "The file format for the batch prediction results. `jsonl`, `csv`, and `bigquery` are the allowed formats, from Vertex Batch Prediction.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "project": {
+            "defaultValue": "{{$.pipeline_google_cloud_project_id}}",
+            "description": "Project to run evaluation container. Defaults to the project in which the PipelineJob is run.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "slicing_specs": {
+            "defaultValue": [],
+            "description": "List of `google.cloud.aiplatform_v1.types.ModelEvaluationSlice.SlicingSpec`. When provided, compute metrics for each defined slice. See sample code in https://cloud.google.com/vertex-ai/docs/pipelines/model-evaluation-component Below is an example of how to format this input.\n1: First, create a SlicingSpec. `from google.cloud.aiplatform_v1.types.ModelEvaluationSlice.Slice import SliceSpec` `from google.cloud.aiplatform_v1.types.ModelEvaluationSlice.Slice.SliceSpec import SliceConfig` `slicing_spec = SliceSpec(configs={ 'feature_a': SliceConfig(SliceSpec.Value(string_value='label_a'))})`\n2: Create a list to store the slicing specs into. `slicing_specs = []`\n3: Format each SlicingSpec into a JSON or Dict. `slicing_spec_json = json_format.MessageToJson(slicing_spec)` or `slicing_spec_dict = json_format.MessageToDict(slicing_spec)`\n4: Combine each slicing_spec JSON into a list. `slicing_specs.append(slicing_spec_json)`\n5: Finally, pass slicing_specs as an parameter for this component. `ModelEvaluationClassificationOp(slicing_specs=slicing_specs)` For more details on configuring slices, see https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform_v1.types.ModelEvaluationSlice",
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "target_field_name": {
+            "description": "The full name path of the features target field in the predictions file. Formatted to be able to find nested columns, delimited by `.`. Alternatively referred to as the ground truth (or ground_truth_column) field.",
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "evaluation_metrics": {
+            "artifactType": {
+              "schemaTitle": "google.ClassificationMetrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "`google.ClassificationMetrics` representing the classification evaluation metrics in GCS."
+          }
+        },
+        "parameters": {
+          "gcp_resources": {
+            "description": "Serialized gcp_resources proto tracking the Dataflow job. For more details, see https://github.com/kubeflow/pipelines/blob/master/components/google-cloud/google_cloud_pipeline_components/proto/README.md.",
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-model-evaluation-import": {
+      "executorLabel": "exec-model-evaluation-import",
+      "inputDefinitions": {
+        "artifacts": {
+          "classification_metrics": {
+            "artifactType": {
+              "schemaTitle": "google.ClassificationMetrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "google.ClassificationMetrics artifact generated from\nthe ModelEvaluationClassificationOp component.",
+            "isOptional": true
+          },
+          "embedding_metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The embedding metrics artifact generated from the\nembedding retrieval metrics component.",
+            "isOptional": true
+          },
+          "explanation": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Path for model explanation metrics generated from an evaluation\ncomponent.",
+            "isOptional": true
+          },
+          "feature_attributions": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "The feature attributions metrics artifact generated\nfrom the feature attribution component.",
+            "isOptional": true
+          },
+          "forecasting_metrics": {
+            "artifactType": {
+              "schemaTitle": "google.ForecastingMetrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "google.ForecastingMetrics artifact generated from\nthe ModelEvaluationForecastingOp component.",
+            "isOptional": true
+          },
+          "metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Path of metrics generated from an evaluation component.",
+            "isOptional": true
+          },
+          "model": {
+            "artifactType": {
+              "schemaTitle": "google.VertexModel",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Vertex model resource that will be the parent resource of the\nuploaded evaluation."
+          },
+          "question_answering_metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "system.Metrics artifact generated from\nthe LLMEvaluationTextGenerationOp component. Subject to change to\ngoogle.QuestionAnsweringMetrics.",
+            "isOptional": true
+          },
+          "regression_metrics": {
+            "artifactType": {
+              "schemaTitle": "google.RegressionMetrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "google.ClassificationMetrics artifact generated from\nthe ModelEvaluationRegressionOp component.",
+            "isOptional": true
+          },
+          "row_based_metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "Path of row_based_metrics generated from an evaluation component.",
+            "isOptional": true
+          },
+          "summarization_metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "system.Metrics artifact generated from\nthe LLMEvaluationTextGenerationOp component. Subject to change to\ngoogle.SummarizationMetrics.",
+            "isOptional": true
+          },
+          "text_generation_metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            },
+            "description": "system.Metrics artifact generated from\nthe LLMEvaluationTextGenerationOp component. Subject to change to\ngoogle.TextGenerationMetrics.",
+            "isOptional": true
+          }
+        },
+        "parameters": {
+          "dataset_path": {
+            "defaultValue": "",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "dataset_paths": {
+            "defaultValue": [],
+            "isOptional": true,
+            "parameterType": "LIST"
+          },
+          "dataset_type": {
+            "defaultValue": "",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "display_name": {
+            "defaultValue": "",
+            "description": "The display name for the uploaded model evaluation resource.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          },
+          "problem_type": {
+            "description": "The problem type of the metrics being imported to the\nVertexModel. `classification`, `regression`, `forecasting`,\n`text-generation`, `question-answering`, and `summarization` are the\ncurrently supported problem types. Must be provided when `metrics` is\nprovided.",
+            "isOptional": true,
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "parameters": {
+          "evaluation_resource_name": {
+            "parameterType": "STRING"
+          },
+          "gcp_resources": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    },
+    "comp-reformat-predictions-bq": {
+      "executorLabel": "exec-reformat-predictions-bq",
+      "inputDefinitions": {
+        "artifacts": {
+          "input_predictions": {
+            "artifactType": {
+              "schemaTitle": "google.BQTable",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "location": {
+            "parameterType": "STRING"
+          },
+          "project": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "predictions": {
+            "artifactType": {
+              "schemaTitle": "google.BQTable",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-sk-train": {
+      "executorLabel": "exec-sk-train",
+      "inputDefinitions": {
+        "artifacts": {
+          "test_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "train_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "serving_container_image_uri": {
+            "parameterType": "STRING"
+          },
+          "sk_param_max_depth": {
+            "parameterType": "NUMBER_INTEGER"
+          },
+          "sk_param_n_estimators": {
+            "parameterType": "NUMBER_INTEGER"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "metrics": {
+            "artifactType": {
+              "schemaTitle": "system.Metrics",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "metricsc": {
+            "artifactType": {
+              "schemaTitle": "system.ClassificationMetrics",
+              "schemaVersion": "0.0.1"
+            }
+          },
+          "model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-upload-model": {
+      "executorLabel": "exec-upload-model",
+      "inputDefinitions": {
+        "artifacts": {
+          "model": {
+            "artifactType": {
+              "schemaTitle": "system.Model",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "display_name": {
+            "parameterType": "STRING"
+          },
+          "parent_model": {
+            "parameterType": "STRING"
+          },
+          "project_id": {
+            "parameterType": "STRING"
+          },
+          "region": {
+            "parameterType": "STRING"
+          },
+          "run": {
+            "parameterType": "STRING"
+          },
+          "run_id": {
+            "parameterType": "STRING"
+          },
+          "serving_image": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "uploaded_model": {
+            "artifactType": {
+              "schemaTitle": "system.Artifact",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "comp-upload-to-bq": {
+      "executorLabel": "exec-upload-to-bq",
+      "inputDefinitions": {
+        "artifacts": {
+          "csv_data": {
+            "artifactType": {
+              "schemaTitle": "system.Dataset",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "dest_dataset_id": {
+            "parameterType": "STRING"
+          },
+          "dest_table_id": {
+            "parameterType": "STRING"
+          },
+          "location": {
+            "parameterType": "STRING"
+          },
+          "project": {
+            "parameterType": "STRING"
+          }
+        }
+      },
+      "outputDefinitions": {
+        "artifacts": {
+          "bq_table": {
+            "artifactType": {
+              "schemaTitle": "google.BQTable",
+              "schemaVersion": "0.0.1"
+            }
+          }
+        },
+        "parameters": {
+          "bq_table_uri": {
+            "parameterType": "STRING"
+          }
+        }
+      }
+    }
+  },
+  "defaultPipelineRoot": "gs://analytics-project-373621/pipeline_root/cb-rimac-hdd",
+  "deploymentSpec": {
+    "executors": {
+      "exec-endpoint-create": {
+        "container": {
+          "args": [
+            "--type",
+            "CreateEndpoint",
+            "--payload",
+            "{\"Concat\": [\"{\", \"\\\"display_name\\\": \\\"\", \"{{$.inputs.parameters['display_name']}}\", \"\\\"\", \", \\\"description\\\": \\\"\", \"{{$.inputs.parameters['description']}}\", \"\\\"\", \", \\\"labels\\\": \", \"{{$.inputs.parameters['labels']}}\", \", \\\"encryption_spec\\\": {\\\"kms_key_name\\\":\\\"\", \"{{$.inputs.parameters['encryption_spec_key_name']}}\", \"\\\"}\", \", \\\"network\\\": \\\"\", \"{{$.inputs.parameters['network']}}\", \"\\\"\", \"}\"]}",
+            "--project",
+            "{{$.inputs.parameters['project']}}",
+            "--location",
+            "{{$.inputs.parameters['location']}}",
+            "--gcp_resources",
+            "{{$.outputs.parameters['gcp_resources'].output_file}}",
+            "--executor_input",
+            "{{$}}"
+          ],
+          "command": [
+            "python3",
+            "-u",
+            "-m",
+            "google_cloud_pipeline_components.container.v1.endpoint.create_endpoint.launcher"
+          ],
+          "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.13.1"
+        }
+      },
+      "exec-get-dataframe": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "get_dataframe"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef get_dataframe(\n    project_id: str,\n    bq_table: str,\n    train_data: dsl.OutputPath(\"Dataset\"),\n    test_data: dsl.OutputPath(\"Dataset\"),\n    val_data: dsl.OutputPath(\"Dataset\"),\n):\n    from google.cloud import bigquery\n    from sklearn.model_selection import train_test_split\n    import logging\n\n    bqclient = bigquery.Client(project=project_id)\n    logging.info(f\"Pulling data from {bq_table}\")\n    table = bigquery.TableReference.from_string(bq_table)\n    rows = bqclient.list_rows(table)\n    dataframe = rows.to_dataframe(create_bqstorage_client=True)\n    # Drop the Time column, otherwise the model will just memorize when the fraud cases happened\n    # Also drop the ml_use column - we will split here. ML_use just splits in test+rest, and we need a 3-way split.\n    dataframe.drop(columns=['Time', 'ML_use'], inplace=True) \n    logging.info(\"Data loaded, writing splits\")\n\n    # 60 / 20 / 20\n    df_train, df_test = train_test_split(dataframe, test_size=0.4)\n    df_test, df_val = train_test_split(df_test, test_size=0.5)\n\n    df_train.to_csv(train_data, index=False)\n    df_test.to_csv(test_data, index=False)\n    df_val.to_csv(val_data, index=False)\n\n"
+          ],
+          "image": "python:3.7"
+        }
+      },
+      "exec-model-batch-predict": {
+        "container": {
+          "args": [
+            "--type",
+            "BatchPredictionJob",
+            "--payload",
+            "{\"Concat\": [\"{\", \"\\\"display_name\\\": \\\"\", \"{{$.inputs.parameters['job_display_name']}}\", \"\\\", \", {\"IfPresent\": {\"InputName\": \"model\", \"Then\": {\"Concat\": [\"\\\"model\\\": \\\"\", \"{{$.inputs.artifacts['model'].metadata['resourceName']}}\", \"\\\",\"]}}}, \" \\\"input_config\\\": {\", \"\\\"instances_format\\\": \\\"\", \"{{$.inputs.parameters['instances_format']}}\", \"\\\"\", \", \\\"gcs_source\\\": {\", \"\\\"uris\\\":\", \"{{$.inputs.parameters['gcs_source_uris']}}\", \"}\", \", \\\"bigquery_source\\\": {\", \"\\\"input_uri\\\": \\\"\", \"{{$.inputs.parameters['bigquery_source_input_uri']}}\", \"\\\"\", \"}\", \"}\", \", \\\"instance_config\\\": {\", \"\\\"instance_type\\\": \\\"\", \"{{$.inputs.parameters['instance_type']}}\", \"\\\"\", \", \\\"key_field\\\": \\\"\", \"{{$.inputs.parameters['key_field']}}\", \"\\\" \", {\"IfPresent\": {\"InputName\": \"included_fields\", \"Then\": {\"Concat\": [\", \\\"included_fields\\\": \", \"{{$.inputs.parameters['included_fields']}}\"]}}}, {\"IfPresent\": {\"InputName\": \"excluded_fields\", \"Then\": {\"Concat\": [\", \\\"excluded_fields\\\": \", \"{{$.inputs.parameters['excluded_fields']}}\"]}}}, \"}\", \", \\\"model_parameters\\\": \", \"{{$.inputs.parameters['model_parameters']}}\", \", \\\"output_config\\\": {\", \"\\\"predictions_format\\\": \\\"\", \"{{$.inputs.parameters['predictions_format']}}\", \"\\\"\", \", \\\"gcs_destination\\\": {\", \"\\\"output_uri_prefix\\\": \\\"\", \"{{$.inputs.parameters['gcs_destination_output_uri_prefix']}}\", \"\\\"\", \"}\", \", \\\"bigquery_destination\\\": {\", \"\\\"output_uri\\\": \\\"\", \"{{$.inputs.parameters['bigquery_destination_output_uri']}}\", \"\\\"\", \"}\", \"}\", \", \\\"dedicated_resources\\\": {\", \"\\\"machine_spec\\\": {\", \"\\\"machine_type\\\": \\\"\", \"{{$.inputs.parameters['machine_type']}}\", \"\\\"\", \", \\\"accelerator_type\\\": \\\"\", \"{{$.inputs.parameters['accelerator_type']}}\", \"\\\"\", \", \\\"accelerator_count\\\": \", \"{{$.inputs.parameters['accelerator_count']}}\", \"}\", \", \\\"starting_replica_count\\\": \", \"{{$.inputs.parameters['starting_replica_count']}}\", \", \\\"max_replica_count\\\": \", \"{{$.inputs.parameters['max_replica_count']}}\", \"}\", \", \\\"service_account\\\": \\\"\", \"{{$.inputs.parameters['service_account']}}\", \"\\\"\", \", \\\"manual_batch_tuning_parameters\\\": {\", \"\\\"batch_size\\\": \", \"{{$.inputs.parameters['manual_batch_tuning_parameters_batch_size']}}\", \"}\", \", \\\"generate_explanation\\\": \", \"{{$.inputs.parameters['generate_explanation']}}\", \", \\\"explanation_spec\\\": {\", \"\\\"parameters\\\": \", \"{{$.inputs.parameters['explanation_parameters']}}\", \", \\\"metadata\\\": \", \"{{$.inputs.parameters['explanation_metadata']}}\", \"}\", \", \\\"labels\\\": \", \"{{$.inputs.parameters['labels']}}\", \", \\\"encryption_spec\\\": {\\\"kms_key_name\\\":\\\"\", \"{{$.inputs.parameters['encryption_spec_key_name']}}\", \"\\\"}\", \"}\"]}",
+            "--project",
+            "{{$.inputs.parameters['project']}}",
+            "--location",
+            "{{$.inputs.parameters['location']}}",
+            "--gcp_resources",
+            "{{$.outputs.parameters['gcp_resources'].output_file}}",
+            "--executor_input",
+            "{{$}}"
+          ],
+          "command": [
+            "python3",
+            "-u",
+            "-m",
+            "google_cloud_pipeline_components.container.v1.batch_prediction_job.launcher"
+          ],
+          "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.13.1"
+        }
+      },
+      "exec-model-deploy": {
+        "container": {
+          "args": [
+            "--type",
+            "DeployModel",
+            "--payload",
+            "{\"Concat\": [\"{\", \"\\\"endpoint\\\": \\\"\", \"{{$.inputs.artifacts['endpoint'].metadata['resourceName']}}\", \"\\\"\", \", \\\"traffic_split\\\": \", \"{{$.inputs.parameters['traffic_split']}}\", \", \\\"deployed_model\\\": {\", \"\\\"model\\\": \\\"\", \"{{$.inputs.artifacts['model'].metadata['resourceName']}}\", \"\\\"\", \", \\\"dedicated_resources\\\": {\", \"\\\"machine_spec\\\": {\", \"\\\"machine_type\\\": \\\"\", \"{{$.inputs.parameters['dedicated_resources_machine_type']}}\", \"\\\"\", \", \\\"accelerator_type\\\": \\\"\", \"{{$.inputs.parameters['dedicated_resources_accelerator_type']}}\", \"\\\"\", \", \\\"accelerator_count\\\": \", \"{{$.inputs.parameters['dedicated_resources_accelerator_count']}}\", \"}\", \", \\\"min_replica_count\\\": \", \"{{$.inputs.parameters['dedicated_resources_min_replica_count']}}\", \", \\\"max_replica_count\\\": \", \"{{$.inputs.parameters['dedicated_resources_max_replica_count']}}\", \"}\", \", \\\"automatic_resources\\\": {\", \"\\\"min_replica_count\\\": \", \"{{$.inputs.parameters['automatic_resources_min_replica_count']}}\", \", \\\"max_replica_count\\\": \", \"{{$.inputs.parameters['automatic_resources_max_replica_count']}}\", \"}\", \", \\\"service_account\\\": \\\"\", \"{{$.inputs.parameters['service_account']}}\", \"\\\"\", \", \\\"disable_container_logging\\\": \", \"{{$.inputs.parameters['disable_container_logging']}}\", \", \\\"enable_access_logging\\\": \", \"{{$.inputs.parameters['enable_access_logging']}}\", \", \\\"explanation_spec\\\": {\", \"\\\"parameters\\\": \", \"{{$.inputs.parameters['explanation_parameters']}}\", \", \\\"metadata\\\": \", \"{{$.inputs.parameters['explanation_metadata']}}\", \"}\", \"}\", \"}\"]}",
+            "--project",
+            "",
+            "--location",
+            "",
+            "--gcp_resources",
+            "{{$.outputs.parameters['gcp_resources'].output_file}}"
+          ],
+          "command": [
+            "python3",
+            "-u",
+            "-m",
+            "google_cloud_pipeline_components.container.v1.endpoint.deploy_model.launcher"
+          ],
+          "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.13.1"
+        }
+      },
+      "exec-model-evaluation-classification": {
+        "container": {
+          "args": [
+            "--setup_file",
+            "/setup.py",
+            "--json_mode",
+            "true",
+            "--project_id",
+            "{{$.inputs.parameters['project']}}",
+            "--location",
+            "{{$.inputs.parameters['location']}}",
+            "--problem_type",
+            "classification",
+            "--target_field_name",
+            "{\"Concat\": [\"instance.\", \"{{$.inputs.parameters['target_field_name']}}\"]}",
+            "--batch_prediction_format",
+            "{{$.inputs.parameters['predictions_format']}}",
+            "{\"IfPresent\": {\"InputName\": \"predictions_gcs_source\", \"Then\": [\"--batch_prediction_gcs_source\", \"{{$.inputs.artifacts['predictions_gcs_source'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"predictions_bigquery_source\", \"Then\": [\"--batch_prediction_bigquery_source\", {\"Concat\": [\"bq://\", \"{{$.inputs.artifacts['predictions_bigquery_source'].metadata['projectId']}}\", \".\", \"{{$.inputs.artifacts['predictions_bigquery_source'].metadata['datasetId']}}\", \".\", \"{{$.inputs.artifacts['predictions_bigquery_source'].metadata['tableId']}}\"]}]}}",
+            "{\"IfPresent\": {\"InputName\": \"model\", \"Then\": [\"--model_name\", \"{{$.inputs.artifacts['model'].metadata['resourceName']}}\"]}}",
+            "--ground_truth_format",
+            "{{$.inputs.parameters['ground_truth_format']}}",
+            "--ground_truth_gcs_source",
+            "{{$.inputs.parameters['ground_truth_gcs_source']}}",
+            "--ground_truth_bigquery_source",
+            "{{$.inputs.parameters['ground_truth_bigquery_source']}}",
+            "--root_dir",
+            "{{$.pipeline_root}}/{{$.pipeline_job_uuid}}-{{$.pipeline_task_uuid}}",
+            "--classification_type",
+            "{{$.inputs.parameters['classification_type']}}",
+            "--class_labels",
+            "{{$.inputs.parameters['class_labels']}}",
+            "--prediction_score_column",
+            "{{$.inputs.parameters['prediction_score_column']}}",
+            "--prediction_label_column",
+            "{{$.inputs.parameters['prediction_label_column']}}",
+            "{\"IfPresent\": {\"InputName\": \"slicing_specs\", \"Then\": [\"--slicing_specs\", \"{{$.inputs.parameters['slicing_specs']}}\"]}}",
+            "--positive_classes",
+            "{{$.inputs.parameters['positive_classes']}}",
+            "--dataflow_job_prefix",
+            "evaluation-classification-{{$.pipeline_job_uuid}}-{{$.pipeline_task_uuid}}",
+            "--dataflow_service_account",
+            "{{$.inputs.parameters['dataflow_service_account']}}",
+            "--dataflow_disk_size",
+            "{{$.inputs.parameters['dataflow_disk_size_gb']}}",
+            "--dataflow_machine_type",
+            "{{$.inputs.parameters['dataflow_machine_type']}}",
+            "--dataflow_workers_num",
+            "{{$.inputs.parameters['dataflow_workers_num']}}",
+            "--dataflow_max_workers_num",
+            "{{$.inputs.parameters['dataflow_max_workers_num']}}",
+            "--dataflow_subnetwork",
+            "{{$.inputs.parameters['dataflow_subnetwork']}}",
+            "--dataflow_use_public_ips",
+            "{{$.inputs.parameters['dataflow_use_public_ips']}}",
+            "--kms_key_name",
+            "{{$.inputs.parameters['encryption_spec_key_name']}}",
+            "--force_runner_mode",
+            "{{$.inputs.parameters['force_runner_mode']}}",
+            "--output_metrics_gcs_path",
+            "{{$.outputs.artifacts['evaluation_metrics'].path}}",
+            "--gcp_resources",
+            "{{$.outputs.parameters['gcp_resources'].output_file}}",
+            "--executor_input",
+            "{{$}}"
+          ],
+          "command": [
+            "python3",
+            "/main.py"
+          ],
+          "image": "gcr.io/ml-pipeline/model-evaluation:v0.9.4"
+        }
+      },
+      "exec-model-evaluation-import": {
+        "container": {
+          "args": [
+            "{\"IfPresent\": {\"InputName\": \"metrics\", \"Then\": [\"--metrics\", \"{{$.inputs.artifacts['metrics'].uri}}\", \"--metrics_explanation\", \"{{$.inputs.artifacts['metrics'].metadata['explanation_gcs_path']}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"row_based_metrics\", \"Then\": [\"--row_based_metrics\", \"{{$.inputs.artifacts['row_based_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"explanation\", \"Then\": [\"--explanation\", \"{{$.inputs.artifacts['explanation'].metadata['explanation_gcs_path']}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"classification_metrics\", \"Then\": [\"--classification_metrics\", \"{{$.inputs.artifacts['classification_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"forecasting_metrics\", \"Then\": [\"--forecasting_metrics\", \"{{$.inputs.artifacts['forecasting_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"regression_metrics\", \"Then\": [\"--regression_metrics\", \"{{$.inputs.artifacts['regression_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"text_generation_metrics\", \"Then\": [\"--text_generation_metrics\", \"{{$.inputs.artifacts['text_generation_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"question_answering_metrics\", \"Then\": [\"--question_answering_metrics\", \"{{$.inputs.artifacts['question_answering_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"summarization_metrics\", \"Then\": [\"--summarization_metrics\", \"{{$.inputs.artifacts['summarization_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"feature_attributions\", \"Then\": [\"--feature_attributions\", \"{{$.inputs.artifacts['feature_attributions'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"embedding_metrics\", \"Then\": [\"--embedding_metrics\", \"{{$.inputs.artifacts['embedding_metrics'].uri}}\"]}}",
+            "{\"IfPresent\": {\"InputName\": \"problem_type\", \"Then\": [\"--problem_type\", \"{{$.inputs.parameters['problem_type']}}\"]}}",
+            "--display_name",
+            "{{$.inputs.parameters['display_name']}}",
+            "--dataset_path",
+            "{{$.inputs.parameters['dataset_path']}}",
+            "--dataset_paths",
+            "{{$.inputs.parameters['dataset_paths']}}",
+            "--dataset_type",
+            "{{$.inputs.parameters['dataset_type']}}",
+            "--pipeline_job_id",
+            "{{$.pipeline_job_uuid}}",
+            "--pipeline_job_resource_name",
+            "{{$.pipeline_job_resource_name}}",
+            "--model_name",
+            "{{$.inputs.artifacts['model'].metadata['resourceName']}}",
+            "--gcp_resources",
+            "{{$.outputs.parameters['gcp_resources'].output_file}}",
+            "--evaluation_resource_name",
+            "{{$.outputs.parameters['evaluation_resource_name'].output_file}}"
+          ],
+          "command": [
+            "python3",
+            "-u",
+            "-m",
+            "google_cloud_pipeline_components.container._implementation.model_evaluation.import_model_evaluation"
+          ],
+          "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.13.1"
+        }
+      },
+      "exec-reformat-predictions-bq": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "reformat_predictions_bq"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\nfrom google_cloud_pipeline_components.types.artifact_types import BQTable\n\ndef reformat_predictions_bq(\n    project: str,\n    location: str,\n    input_predictions: dsl.Input[BQTable],\n    predictions: dsl.Output[BQTable]\n):\n\n    from google.cloud.bigquery import Client\n    import logging\n\n    bq = Client(project=project, location=location)\n    table_project = input_predictions.metadata['projectId']\n    table_dataset = input_predictions.metadata['datasetId']\n    table_table = input_predictions.metadata['tableId']\n    table_ref = f\"{table_project}.{table_dataset}.{table_table}\"\n\n    sql = f\"\"\"\n        CREATE OR REPLACE TABLE `{table_ref}_reformat` AS\n        SELECT * EXCEPT(prediction), \n            '[' || CAST(1.0-CAST(prediction AS FLOAT64) AS STRING) || ',' || prediction || ']' as prediction\n        FROM `{table_ref}`\"\"\"\n\n    logging.info(f\"Processing data in table {table_ref}\")\n    logging.info(f\"Query: {sql}\")\n    job = bq.query(sql)\n\n    job.result() # wait for completion\n\n    predictions.metadata['projectId'] = table_project\n    predictions.metadata['datasetId'] = table_dataset\n    predictions.metadata['tableId'] = table_table + \"_reformat\"\n\n"
+          ],
+          "image": "python:3.7"
+        }
+      },
+      "exec-sk-train": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "sk_train"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef sk_train(\n    train_data: Input[Dataset],\n    test_data: Input[Dataset],\n    metrics: Output[Metrics],\n    model: Output[Model],\n    sk_param_max_depth: int,\n    sk_param_n_estimators: int,\n    metricsc: Output[ClassificationMetrics],\n    serving_container_image_uri: str\n):\n    from train import train\n\n    train(\n        train_dataset_path=train_data.path, \n        test_dataset_path=test_data.path, \n        sk_param_max_depth=sk_param_max_depth,\n        sk_param_n_estimators=sk_param_n_estimators,\n        model_output_path=model.path,\n        metrics=metrics,\n        metricsc=metricsc,\n        model=model,\n        serving_container_image_uri=serving_container_image_uri)\n\n"
+          ],
+          "image": "python:3.7"
+        }
+      },
+      "exec-upload-model": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "upload_model"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\n\ndef upload_model(\n    project_id: str,\n    region: str,\n    model: dsl.Input[dsl.Model],\n    display_name: str,\n    serving_image: str,\n    parent_model: str,\n    uploaded_model: dsl.Output[dsl.Artifact],\n    run: str,\n    run_id: str\n):\n    from google.cloud import aiplatform\n    import logging\n\n    logging.info(f\"Upload model for run {run} and run ID {run_id}\")\n\n    model_path = '/'.join(model.uri.split('/')[:-1]) # remove filename after last / - send dir rather than file\n\n    vertex_model = aiplatform.Model.upload(\n        project=project_id,\n        location=region,\n        display_name=display_name,\n        artifact_uri=model_path,\n        serving_container_image_uri=serving_image,\n        parent_model=parent_model,\n        labels={\n            'run': run,\n            'run_id': run_id\n        }\n    )\n\n    uploaded_model.metadata['resourceName'] = f'{vertex_model.resource_name}@{vertex_model.version_id}'\n    uploaded_model.uri = f'https://{region}-aiplatform.googleapis.com/v1/{vertex_model.resource_name}@{vertex_model.version_id}'\n\n"
+          ],
+          "image": "python:3.7"
+        }
+      },
+      "exec-upload-to-bq": {
+        "container": {
+          "args": [
+            "--executor_input",
+            "{{$}}",
+            "--function_to_execute",
+            "upload_to_bq"
+          ],
+          "command": [
+            "sh",
+            "-c",
+            "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"$0\" \"$@\"\n",
+            "sh",
+            "-ec",
+            "program_path=$(mktemp -d)\n\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\n_KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+            "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import *\nfrom google_cloud_pipeline_components.types.artifact_types import BQTable\n\ndef upload_to_bq(\n    project: str,\n    location: str,\n    dest_dataset_id: str,\n    dest_table_id: str, \n    csv_data: dsl.Input[dsl.Dataset], \n    bq_table: dsl.Output[BQTable]) -> NamedTuple('outputs', [('bq_table_uri', str)]):\n\n    from collections import namedtuple\n    import logging\n    import pandas as pd\n    import numpy as np\n\n    from config import CLASS_NAMES\n\n    bq_table.metadata[\"projectId\"] = project\n    bq_table.metadata[\"datasetId\"] = dest_dataset_id\n    bq_table.metadata[\"tableId\"] = dest_table_id\n    logging.info(f\"BQ table: {bq_table}\\nmetadata: {bq_table.metadata}\")\n\n    logging.info(f\"Reading {csv_data.path}\")\n    dest_table = f'{dest_dataset_id}.{dest_table_id}'\n    logging.info(f\"Writing to {dest_table}\")\n\n    df = pd.read_csv(csv_data.path)\n\n    # Convert Class column to int and map to CLASS_NAMES label\n    df_class = df.pop('Class')\n    df['Class'] = list(map(lambda f: CLASS_NAMES[f], np.rint(df_class).astype(np.int64)))\n\n    df.to_gbq(\n        destination_table=f\"{dest_table}\", \n        project_id=project, \n        location=location)\n\n    t = namedtuple('outputs', ['bq_table_uri'])\n    return t(f'bq://{project}.{dest_dataset_id}.{dest_table_id}')\n\n"
+          ],
+          "image": "python:3.7"
+        }
+      }
+    }
+  },
+  "pipelineInfo": {
+    "name": "cb-rimac-hdd"
+  },
+  "root": {
+    "dag": {
+      "outputs": {
+        "artifacts": {
+          "sk-train-metrics": {
+            "artifactSelectors": [
+              {
+                "outputArtifactKey": "metrics",
+                "producerSubtask": "sk-train"
+              }
+            ]
+          },
+          "sk-train-metricsc": {
+            "artifactSelectors": [
+              {
+                "outputArtifactKey": "metricsc",
+                "producerSubtask": "sk-train"
+              }
+            ]
+          }
+        }
+      },
+      "tasks": {
+        "endpoint-create": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-endpoint-create"
+          },
+          "inputs": {
+            "parameters": {
+              "display_name": {
+                "runtimeValue": {
+                  "constant": "cb-rimac-hdd"
+                }
+              },
+              "location": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "project": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Create Vertex AI Endpoint"
+          }
+        },
+        "get-dataframe": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-get-dataframe"
+          },
+          "inputs": {
+            "parameters": {
+              "bq_table": {
+                "componentInputParameter": "bq_table"
+              },
+              "project_id": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Load And Split Data"
+          }
+        },
+        "model-batch-predict": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-model-batch-predict"
+          },
+          "dependentTasks": [
+            "upload-model",
+            "upload-to-bq"
+          ],
+          "inputs": {
+            "artifacts": {
+              "model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "uploaded_model",
+                  "producerTask": "upload-model"
+                }
+              }
+            },
+            "parameters": {
+              "bigquery_destination_output_uri": {
+                "runtimeValue": {
+                  "constant": "bq://analytics-project-373621.rimac_hdd_output.cb-rimac-hdd-bp-20240422-0526"
+                }
+              },
+              "bigquery_source_input_uri": {
+                "taskOutputParameter": {
+                  "outputParameterKey": "bq_table_uri",
+                  "producerTask": "upload-to-bq"
+                }
+              },
+              "excluded_fields": {
+                "runtimeValue": {
+                  "constant": [
+                    "HeartDisease"
+                  ]
+                }
+              },
+              "instances_format": {
+                "runtimeValue": {
+                  "constant": "bigquery"
+                }
+              },
+              "job_display_name": {
+                "runtimeValue": {
+                  "constant": "bp-cb-rimac-hdd-20240422-0526"
+                }
+              },
+              "location": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "machine_type": {
+                "runtimeValue": {
+                  "constant": "n1-standard-8"
+                }
+              },
+              "max_replica_count": {
+                "runtimeValue": {
+                  "constant": 8.0
+                }
+              },
+              "predictions_format": {
+                "runtimeValue": {
+                  "constant": "bigquery"
+                }
+              },
+              "project": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              },
+              "starting_replica_count": {
+                "runtimeValue": {
+                  "constant": 2.0
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Batch Prediction"
+          }
+        },
+        "model-deploy": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-model-deploy"
+          },
+          "dependentTasks": [
+            "endpoint-create",
+            "upload-model"
+          ],
+          "inputs": {
+            "artifacts": {
+              "endpoint": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "endpoint",
+                  "producerTask": "endpoint-create"
+                }
+              },
+              "model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "uploaded_model",
+                  "producerTask": "upload-model"
+                }
+              }
+            },
+            "parameters": {
+              "dedicated_resources_machine_type": {
+                "runtimeValue": {
+                  "constant": "n1-standard-8"
+                }
+              },
+              "dedicated_resources_max_replica_count": {
+                "runtimeValue": {
+                  "constant": 1.0
+                }
+              },
+              "dedicated_resources_min_replica_count": {
+                "runtimeValue": {
+                  "constant": 1.0
+                }
+              },
+              "enable_access_logging": {
+                "runtimeValue": {
+                  "constant": true
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Deploy Model To Endpoint"
+          }
+        },
+        "model-evaluation-classification": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-model-evaluation-classification"
+          },
+          "dependentTasks": [
+            "reformat-predictions-bq",
+            "upload-to-bq"
+          ],
+          "inputs": {
+            "artifacts": {
+              "predictions_bigquery_source": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "predictions",
+                  "producerTask": "reformat-predictions-bq"
+                }
+              }
+            },
+            "parameters": {
+              "class_labels": {
+                "runtimeValue": {
+                  "constant": [
+                    "Heart Desease",
+                    "Not HD"
+                  ]
+                }
+              },
+              "dataflow_service_account": {
+                "runtimeValue": {
+                  "constant": "pipeline-runner@analytics-project-373621.iam.gserviceaccount.com"
+                }
+              },
+              "dataflow_use_public_ips": {
+                "runtimeValue": {
+                  "constant": false
+                }
+              },
+              "force_runner_mode": {
+                "runtimeValue": {
+                  "constant": "Dataflow"
+                }
+              },
+              "ground_truth_bigquery_source": {
+                "taskOutputParameter": {
+                  "outputParameterKey": "bq_table_uri",
+                  "producerTask": "upload-to-bq"
+                }
+              },
+              "ground_truth_format": {
+                "runtimeValue": {
+                  "constant": "bigquery"
+                }
+              },
+              "location": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "prediction_score_column": {
+                "runtimeValue": {
+                  "constant": "prediction"
+                }
+              },
+              "predictions_format": {
+                "runtimeValue": {
+                  "constant": "bigquery"
+                }
+              },
+              "project": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              },
+              "target_field_name": {
+                "runtimeValue": {
+                  "constant": "HeartDisease"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Model Evaluation"
+          }
+        },
+        "model-evaluation-import": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-model-evaluation-import"
+          },
+          "dependentTasks": [
+            "model-evaluation-classification",
+            "upload-model"
+          ],
+          "inputs": {
+            "artifacts": {
+              "classification_metrics": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "evaluation_metrics",
+                  "producerTask": "model-evaluation-classification"
+                }
+              },
+              "model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "uploaded_model",
+                  "producerTask": "upload-model"
+                }
+              }
+            },
+            "parameters": {
+              "dataset_type": {
+                "runtimeValue": {
+                  "constant": "bigquery"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Import Model Evaluation"
+          }
+        },
+        "reformat-predictions-bq": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-reformat-predictions-bq"
+          },
+          "dependentTasks": [
+            "model-batch-predict"
+          ],
+          "inputs": {
+            "artifacts": {
+              "input_predictions": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "bigquery_output_table",
+                  "producerTask": "model-batch-predict"
+                }
+              }
+            },
+            "parameters": {
+              "location": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "project": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Reformat Predictions"
+          }
+        },
+        "sk-train": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-sk-train"
+          },
+          "dependentTasks": [
+            "get-dataframe"
+          ],
+          "inputs": {
+            "artifacts": {
+              "test_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "test_data",
+                  "producerTask": "get-dataframe"
+                }
+              },
+              "train_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "train_data",
+                  "producerTask": "get-dataframe"
+                }
+              }
+            },
+            "parameters": {
+              "serving_container_image_uri": {
+                "componentInputParameter": "serving_container_image_uri"
+              },
+              "sk_param_max_depth": {
+                "componentInputParameter": "sk_param_max_depth"
+              },
+              "sk_param_n_estimators": {
+                "componentInputParameter": "sk_param_n_estimators"
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Train Model"
+          }
+        },
+        "upload-model": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-upload-model"
+          },
+          "dependentTasks": [
+            "sk-train"
+          ],
+          "inputs": {
+            "artifacts": {
+              "model": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "model",
+                  "producerTask": "sk-train"
+                }
+              }
+            },
+            "parameters": {
+              "display_name": {
+                "runtimeValue": {
+                  "constant": "rimac-hdd-kfp"
+                }
+              },
+              "parent_model": {
+                "runtimeValue": {
+                  "constant": ""
+                }
+              },
+              "project_id": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              },
+              "region": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "run": {
+                "runtimeValue": {
+                  "constant": "{{$.pipeline_job_name}}"
+                }
+              },
+              "run_id": {
+                "runtimeValue": {
+                  "constant": "{{$.pipeline_job_uuid}}"
+                }
+              },
+              "serving_image": {
+                "runtimeValue": {
+                  "constant": "us-docker.pkg.dev/vertex-ai/training/sklearn-cpu.1-0:latest"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Upload Model"
+          }
+        },
+        "upload-to-bq": {
+          "cachingOptions": {
+            "enableCache": true
+          },
+          "componentRef": {
+            "name": "comp-upload-to-bq"
+          },
+          "dependentTasks": [
+            "get-dataframe"
+          ],
+          "inputs": {
+            "artifacts": {
+              "csv_data": {
+                "taskOutputArtifact": {
+                  "outputArtifactKey": "val_data",
+                  "producerTask": "get-dataframe"
+                }
+              }
+            },
+            "parameters": {
+              "dest_dataset_id": {
+                "runtimeValue": {
+                  "constant": "rimac_hdd_output"
+                }
+              },
+              "dest_table_id": {
+                "runtimeValue": {
+                  "constant": "cb-rimac-hdd-val-20240422-0526"
+                }
+              },
+              "location": {
+                "runtimeValue": {
+                  "constant": "us-east1"
+                }
+              },
+              "project": {
+                "runtimeValue": {
+                  "constant": "analytics-project-373621"
+                }
+              }
+            }
+          },
+          "taskInfo": {
+            "name": "Upload to BigQuery"
+          }
+        }
+      }
+    },
+    "inputDefinitions": {
+      "parameters": {
+        "bq_table": {
+          "defaultValue": "",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "serving_container_image_uri": {
+          "defaultValue": "us-docker.pkg.dev/vertex-ai/training/sklearn-cpu.1-0:latest",
+          "isOptional": true,
+          "parameterType": "STRING"
+        },
+        "sk_param_max_depth": {
+          "defaultValue": 10.0,
+          "isOptional": true,
+          "parameterType": "NUMBER_INTEGER"
+        },
+        "sk_param_n_estimators": {
+          "defaultValue": 200.0,
+          "isOptional": true,
+          "parameterType": "NUMBER_INTEGER"
+        }
+      }
+    },
+    "outputDefinitions": {
+      "artifacts": {
+        "sk-train-metrics": {
+          "artifactType": {
+            "schemaTitle": "system.Metrics",
+            "schemaVersion": "0.0.1"
+          }
+        },
+        "sk-train-metricsc": {
+          "artifactType": {
+            "schemaTitle": "system.ClassificationMetrics",
+            "schemaVersion": "0.0.1"
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "2.1.0",
+  "sdkVersion": "kfp-2.7.0"
+}

@@ -1,0 +1,25 @@
+{
+  "model_name": "Heart Failure Prediction Dataset",
+  "model_overview": "This dataset combines information from five independent heart disease datasets, resulting in a comprehensive collection of 918 observations. It includes 11 features such as age, sex, chest pain type, blood pressure, cholesterol level, and electrocardiogram results, among others. The dataset aims to aid in predicting heart disease risk, a critical aspect given the global burden of cardiovascular diseases.",
+  "model_owners": [{ "name": "Piero Casusol", "contact": "piero.casusolv@pucp.edu.pe" }],
+  "model_references": [
+    "https://www.kaggle.com/code/kaanboke/beginner-friendly-catboost-with-optuna/notebook"
+  ],
+  "model_ethical_consideration_risks": [
+    {
+      "name": "Classifying a condition as heart desease can be highly impactful for the person evaluated.",
+      "mitigation_strategy": "Any classification as heart desease and implication thereof needs to be treated with caution and requires a very high level of certainty."
+    }
+  ],
+  "model_ethical_limitations": [
+    {
+      "description": "Using this model requires knowledge of the PCA transformation that was applied to the training data."
+    }
+  ],
+  "model_considerations_use_cases": [
+    {
+      "description": "Heart Desease detection (ML technology demo only)"
+    }
+  ],
+  "model_considerations_users": [{ "description": "Data Scientists" }]
+}

@@ -1,0 +1,52 @@
+{
+  "BigQuery Schema": [
+    {
+      "name": "Age",
+      "type": "INTEGER"
+    },
+    {
+      "name": "Sex",
+      "type": "STRING"
+    },
+    {
+      "name": "ChestPainType",
+      "type": "STRING"
+    },
+    {
+      "name": "RestingBP",
+      "type": "INTEGER"
+    },
+    {
+      "name": "Cholesterol",
+      "type": "INTEGER"
+    },
+    {
+      "name": "FastingBS",
+      "type": "INTEGER"
+    },
+    {
+      "name": "RestingECG",
+      "type": "STRING"
+    },
+    {
+      "name": "MaxHR",
+      "type": "INTEGER"
+    },
+    {
+      "name": "ExerciseAngina",
+      "type": "STRING"
+    },
+    {
+      "name": "Oldpeak",
+      "type": "FLOAT"
+    },
+    {
+      "name": "ST_Slope",
+      "type": "STRING"
+    },
+    {
+      "name": "HeartDisease",
+      "type": "INTEGER"
+    }
+  ]
+}
